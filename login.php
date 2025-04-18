@@ -1,88 +1,133 @@
 <?php
-    session_start();
-    include('server/connection.php');
+session_start();
+include('../server/connection.php');
 
-    if (isset($_SESSION['logged_in'])) {
-        header('location: account.php');
-        exit;
-    }
+if (isset($_SESSION['admin_logged_in'])) {
+    header('location: index.php');
+    exit;
+}
 
-    if (isset($_POST['login_btn'])) {
-        $email = $_POST['user_email'];
-        $password = md5($_POST['user_password']);
+if (isset($_POST['login_btn'])) {
+    $email = $_POST['email'];
+    $password = $_POST['password'];
 
-        $query = "SELECT user_id, user_name, user_email, user_password, user_phone, user_address, user_city, user_photo FROM users WHERE user_email = ? AND user_password = ? LIMIT 1";
+    $query = "SELECT admin_id, admin_name, admin_email, admin_phone, admin_password, admin_photo, admin_photo2 FROM admins WHERE admin_email = ? AND admin_password = ? LIMIT 1";
 
-        $stmt_login = $conn->prepare($query);
-        $stmt_login->bind_param('ss', $email, $password);
-        
-        if ($stmt_login->execute()) {
-            $stmt_login->bind_result($user_id, $user_name, $user_email, $user_password, $user_phone, $user_address, $user_city, $user_photo);
-            $stmt_login->store_result();
+    $stmt_login = $conn->prepare($query);
+    $stmt_login->bind_param('ss', $email, $password);
 
-            if ($stmt_login->num_rows() == 1) {
-                $stmt_login->fetch();
+    if ($stmt_login->execute()) {
+        $stmt_login->bind_result($admin_id, $admin_name, $admin_email, $admin_phone, $admin_password, $admin_photo, $admin_photo2);
+        $stmt_login->store_result();
 
-                $_SESSION['user_id'] = $user_id;
-                $_SESSION['user_name'] = $user_name;
-                $_SESSION['user_email'] = $user_email;
-                $_SESSION['user_phone'] = $user_phone;
-                $_SESSION['user_address'] = $user_address;
-                $_SESSION['user_city'] = $user_city;
-                $_SESSION['user_photo'] = $user_photo;
-                $_SESSION['logged_in'] = true;
+        if ($stmt_login->num_rows() == 1) {
+            $stmt_login->fetch();
 
-                header('location: account.php?message=Logged in successfully');
-            } else {
-                header('location: login.php?error=Could not verify your account');
-            }
+            $_SESSION['admin_id'] = $admin_id;
+            $_SESSION['admin_name'] = $admin_name;
+            $_SESSION['admin_email'] = $admin_email;
+            $_SESSION['admin_phone'] = $admin_phone;
+            $_SESSION['admin_photo'] = $admin_photo;
+            $_SESSION['admin_photo2'] = $admin_photo2;
+            $_SESSION['admin_logged_in'] = true;
+
+            header('location: index.php?message=Logged in successfully');
         } else {
-            // Error
-            header('location: login.php?error=Something went wrong!');
+            header('location: login.php?error=Could not verify your account');
         }
+    } else {
+        // Error
+        header('location: login.php?error=Something went wrong!');
     }
+}
 ?>
 
-<?php include('layouts/header.php'); ?>
+<!DOCTYPE html>
+<html lang="en">
 
-    <!-- Login Section Begin -->
-    <section class="checkout spad">
-        <div class="container">
-            <div class="checkout__form">
-                <form id="login-form" method="POST" action="login.php">
-                    <?php if (isset($_GET['error'])) { ?>
-                        <div class="alert alert-danger" role="alert">
-                            <?php if (isset($_GET['error'])) {
-                                echo $_GET['error'];
-                            } ?>
-                        </div>
-                    <?php } ?>
-                    <div class="row">
-                        <div class="col-lg-6 col-md-6">
-                            <h6 class="checkout__title">Login</h6>
-                            <div class="checkout__input">
-                                <p>Email</p>
-                                <input type="email" name="user_email">
-                            </div>
-                            <div class="checkout__input">
-                                <p>Password</p>
-                                <input type="password" name="user_password">
-                            </div>
-                            <div class="checkout__input">
-                                <input type="submit" class="site-btn" id="login-btn" name="login_btn" value="LOGIN" />
-                            </div>
-                            <div class="checkout__input__checkbox">
-                                <label>
-                                    <a id="register-url" href="register.php">Do you have an account? Register</a>
-                                </label>
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>E-Shop - Login</title>
+
+    <!-- Custom fonts for this template-->
+    <link href="assets/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
+
+    <!-- Custom styles for this template-->
+    <link href="assets/css/sb-admin-2.min.css" rel="stylesheet">
+
+</head>
+
+<body id="page-top">
+    <div class="container">
+        <!-- Outer Row -->
+        <div class="row justify-content-center">
+
+            <div class="col-xl-6 col-lg-12 col-md-9">
+
+                <div class="card o-hidden border-0 shadow-lg my-5">
+                    <!-- <img class="card-img-top" style="width: 150px;" src="logo.PNG"  alt="Card image cap"> -->
+                    <div class="card-body p-0">
+                        <!-- Nested Row within Card Body -->
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="p-5">
+                                    <div class="text-center">
+                                        <h1 class="h4 text-gray-900 mb-4">
+                                            <?php if (isset($_GET['error'])) {
+                                                echo $_GET['error'];
+                                            } ?>
+                                        </h1>
+                                    </div>
+                                    <p align="center">WELCOME LOGIN NOW</p>
+                                    <form class="user" id="login-form" enctype="multipart/form-data" method="POST" action="login.php">
+                                        <div class="form-group">
+                                            <input type="email" class="form-control form-control-user" id="exampleInputEmail" name="email" aria-describedby="emailHelp" placeholder="Enter Email Address...">
+                                        </div>
+                                        <div class="form-group">
+                                            <input type="password" class="form-control form-control-user" id="exampleInputPassword" name="password" placeholder="Password">
+                                        </div>
+                                        <div class="form-group">
+                                            <div class="custom-control custom-checkbox small">
+                                                <!-- <input type="checkbox" class="custom-control-input" id="customCheck">
+                                                <label class="custom-control-label" for="customCheck">Remember
+                                                    Me</label> -->
+                                            </div>
+                                        </div>
+                                        <input type="submit" class="btn btn-primary btn-user btn-block" name="login_btn" value="Login" />
+                                    </form>
+                                    <hr>
+                                    <!-- <div class="text-center">
+                                        <a class="small" href="forgot-password.html">Forgot Password?</a>
+                                    </div> -->
+                                </div>
                             </div>
                         </div>
                     </div>
-                </form>
-            </div>
-        </div>
-    </section>
-    <!-- Login Section End -->
+                </div>
 
-    <!-- Footer Section Begin -->
-<?php include('layouts/footer.php'); ?>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Bootstrap core JavaScript-->
+    <script src="assets/vendor/jquery/jquery.min.js"></script>
+    <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Core plugin JavaScript-->
+    <script src="assets/vendor/jquery-easing/jquery.easing.min.js"></script>
+
+    <!-- Custom scripts for all pages-->
+    <script src="assets/js/sb-admin-2.min.js"></script>
+
+</body>
+
+</html>
